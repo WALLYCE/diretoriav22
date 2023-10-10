@@ -1,0 +1,30 @@
+
+const conexao = require("../databases/conexao")
+const cidades_case = require('../controllers/cidades_base')
+const ticket_medio_pf_base = ` SELECT round(avg(servico.valor::numeric), 2) AS ticket_medio,
+CASE
+   ${cidades_case}
+END AS cidade
+FROM cliente_servico
+JOIN cliente_servico_endereco ON cliente_servico.id_cliente_servico = cliente_servico_endereco.id_cliente_servico
+JOIN endereco_numero ON endereco_numero.id_endereco_numero = cliente_servico_endereco.id_endereco_numero
+JOIN cidade ON endereco_numero.id_cidade = cidade.id_cidade
+JOIN servico_status ON servico_status.id_servico_status = cliente_servico.id_servico_status
+JOIN cliente ON cliente.id_cliente = cliente_servico.id_cliente
+JOIN servico ON servico.id_servico = cliente_servico.id_servico
+WHERE (servico_status.id_servico_status = 11 OR servico_status.id_servico_status = 12 OR servico_status.id_servico_status = 14) AND cliente_servico_endereco.tipo::text = 'instalacao'::text AND cliente.nome_razaosocial::text !~~ '%TESTE%'::text AND cliente.nome_razaosocial::text !~~ '%ESERV%'::text AND cliente.nome_razaosocial::text !~~ '%RICARDO JOSE OLIVEIRA NEVES%'::text AND cliente.tipo_pessoa::text = 'pf'::text
+GROUP BY (
+CASE
+${cidades_case}
+END)`
+exports.getTicketMedioPF =  async(req, res, next)=>{       
+    const query = `Select * from (${ticket_medio_pf_base}) as k`;
+    try{
+        const resposta = await conexao.query(query);
+        res.status(200).send(resposta.rows)
+        }catch(erro){
+            res.status(400).send(erro)
+        }
+    
+   }
+ 
