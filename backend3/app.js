@@ -33,6 +33,7 @@ const OSTecnicosRedeRoute = require('./routes/os_tecnicos_rede')
 const Reagendamento_os_dataRoute = require('./routes/reagendamento_os_data-route')
 const CobrancaRoute = require('./routes/cobranca-route')
 const EstoqueRoute = require('./routes/estoque-route')
+const QualidadeRoute = require('./routes/qualidade-route')
 //Habilitando cors
 app.use(bodyParser.json());
 app.use((req, res, next) => {
@@ -76,4 +77,5 @@ app.use('/os_tecnicos_rede', OSTecnicosRedeRoute)
 app.use('/reagendamento_os_data', Reagendamento_os_dataRoute )
 app.use('/cobranca', CobrancaRoute)
 app.use('/estoque', EstoqueRoute)
+app.use('/qualidade', QualidadeRoute)
 module.exports = app;

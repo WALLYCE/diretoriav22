@@ -38,6 +38,7 @@ function ChartLigacoesRecebidas(props) {
     
 
     useEffect( ()=>{
+  
       async function jsons(){
       const meu_array=[];
       const ligacoes_nota=[];
@@ -186,9 +187,9 @@ function ChartLigacoesRecebidas(props) {
       
       api.post(props.url,{ data_inicial: dataInicial, data_final: dataFinal})
         .then(result => {
-           
+          
            setDados(result.data);
-
+ 
            });
         }, [menuRapido])
 

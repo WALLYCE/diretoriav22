@@ -180,7 +180,7 @@ function ChartLigacoesRealizadas(props) {
       
       api.post(props.url,{ data_inicial: dataInicial, data_final: dataFinal})
         .then(result => {
-           
+           console.log(result.data)
            setDados(result.data);
 
            });

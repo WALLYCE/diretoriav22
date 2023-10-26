@@ -6,6 +6,8 @@ const auth = require("../middlewares/auth");
 
 router.post('/realizadas', auth.authenticated,  LigacoesController.getLigacoesRealizadas)
 router.post('/realizadas/vendas', auth.authenticated,  LigacoesController.getLigacoesRealizadasVendas)
+
+router.post('/realizadas/vendas/bruto', auth.authenticated,  LigacoesController.getLigacoesRealizadasVendasBruto)
 router.post('/realizadas/sac', auth.authenticated,  LigacoesController.getLigacoesRealizadasSac)
 router.post('/realizadas/cobranca', auth.authenticated,  LigacoesController.getLigacoesRealizadasCobranca)
 router.post('/realizadas/cobranca/bruto', auth.authenticated,  LigacoesController.getLigacoesRealizadasCobrancaBruto)

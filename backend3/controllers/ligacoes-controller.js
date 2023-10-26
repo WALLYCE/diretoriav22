@@ -33,18 +33,30 @@ exports.getLigacoesRealizadas = (req,res, next)=>{
 exports.getLigacoesRealizadasVendas = (req,res, next)=>{
 
     conexaoMysql.getConnection((error, conn)=>{
-    const qry =     `select ramal.nome as ramal, k.data_ligacao, k.resposta, k.gravacao, k.avaliacao from
-     (select cdr.src as ramal, DATE_FORMAT(calldatestart,'%d/%m/%Y %H:%i:%s') as data_ligacao,
+    const qry =     `select ramal.nome as ramal, k.data_ligacao, k.resposta, k.telefone, k.gravacao, k.avaliacao from (select cdr.src as ramal, DATE_FORMAT(calldatestart,'%d/%m/%Y %H:%i:%s') as data_ligacao,
     case 
     when disposition = 'ANSWERED' then 'Atendida'
     else 'Não Atendida'
     end as resposta,
-    SUBSTRING_INDEX(SUBSTRING_INDEX(lastdata, '/3', -1), ',', 1) as telefone, cdr.uniqueid as gravacao,
+    SUBSTRING_INDEX(SUBSTRING_INDEX(lastdata, '/3', -1), ',', 1) as telefone,
+    cdr.uniqueid as gravacao,
     case when cdr.nota = '1' or cdr.nota = '2' or cdr.nota = '3' or cdr.nota = '4' or cdr.nota = '5' then cdr.nota else 'sem nota' end  as avaliacao
     FROM cdr 
-    where  cdr.disposition = 'ANSWERED' and TIMESTAMPDIFF(SECOND, cdr.calldateanswer, cdr.calldateend) >=15 and  cdr.dst = 'A' and CAST(calldatestart AS date) >= date_format(str_to_date('${req.body['data_inicial']}', '%m/%d/%Y'), '%Y-%m-%d') and  CAST(calldatestart AS date) <= date_format(str_to_date('${req.body['data_final']}', '%m/%d/%Y'), '%Y-%m-%d')) as k
+    where cdr.disposition = 'ANSWERED' and TIMESTAMPDIFF(SECOND, cdr.calldateanswer, cdr.calldateend) >=15 and cdr.dst = 'A' and CAST(calldatestart AS date) >= date_format(str_to_date('${req.body['data_inicial']}', '%m/%d/%Y'), '%Y-%m-%d') and  CAST(calldatestart AS date) <= date_format(str_to_date('${req.body['data_final']}', '%m/%d/%Y'), '%Y-%m-%d')) as k
     inner join ramal on k.ramal = ramal.numero
-    where k.ramal in ('2084', '2074','2079','2068','2041','2043','2001') `;
+    where k.ramal in ('2000',
+        '2001',
+        '2015',
+        '2017',
+        '2041',
+        '2043',
+        '2048',
+        '2074',
+        '2067',
+        '2068',
+        '2069',
+        '2079',
+        '2084') `;
     conn.query(qry, (erro, resultado)=> {
         conn.release();
         if(erro){
@@ -59,10 +71,38 @@ exports.getLigacoesRealizadasVendas = (req,res, next)=>{
     })
  }
 
+ exports.getLigacoesRealizadasVendasBruto = (req,res, next)=>{
+
+    conexaoMysql.getConnection((error, conn)=>{
+    const qry =     `select ramal.nome as ramal, k.data_ligacao, k.resposta, k.telefone, k.gravacao, k.avaliacao from (select cdr.src as ramal, DATE_FORMAT(calldatestart,'%d/%m/%Y %H:%i:%s') as data_ligacao,
+    case 
+    when disposition = 'ANSWERED' then 'Atendida'
+    else 'Não Atendida'
+    end as resposta,
+    SUBSTRING_INDEX(SUBSTRING_INDEX(lastdata, '/3', -1), ',', 1) as telefone,
+    cdr.uniqueid as gravacao,
+    case when cdr.nota = '1' or cdr.nota = '2' or cdr.nota = '3' or cdr.nota = '4' or cdr.nota = '5' then cdr.nota else 'sem nota' end  as avaliacao
+    FROM cdr 
+    where CAST(calldatestart AS date) >= date_format(str_to_date('${req.body['data_inicial']}', '%m/%d/%Y'), '%Y-%m-%d') and  CAST(calldatestart AS date) <= date_format(str_to_date('${req.body['data_final']}', '%m/%d/%Y'), '%Y-%m-%d')) as k
+    inner join ramal on k.ramal = ramal.numero
+    where k.ramal in ('2084', '2074','2079','2068','2041','2043','2001')`;
+    conn.query(qry, (erro, resultado)=> {
+        conn.release();
+        if(erro){
+            console.log(erro)
+            res.status(400).send(erro)
+        }else{
+           
+            res.status(200).send(resultado);
+        }
+    
+    })
+    })
+ }
  exports.getLigacoesRealizadasQualidade = (req,res, next)=>{
 
     conexaoMysql.getConnection((error, conn)=>{
-    const qry =     `select ramal.nome as ramal, k.data_ligacao, k.resposta, k.gravacao, k.avaliacao from (select cdr.src as ramal, DATE_FORMAT(calldatestart,'%d/%m/%Y %H:%i:%s') as data_ligacao,
+    const qry =     `select ramal.nome as ramal, k.data_ligacao, k.resposta, k.telefone, k.gravacao, k.avaliacao from (select cdr.src as ramal, DATE_FORMAT(calldatestart,'%d/%m/%Y %H:%i:%s') as data_ligacao,
     case 
     when disposition = 'ANSWERED' then 'Atendida'
     else 'Não Atendida'
@@ -434,6 +474,7 @@ exports.getLigacoesRecebidasVendas= (req,res, next)=>{
        LEFT join ramal on CONCAT('SIP/', ramal.numero) = SUBSTR(cdr.dstchannel,1, 8)
        where ((cdr.lastdata like 'vendas%' and cdr.dcontext!= 'interno') or (
        (cdr.dstchannel like 'SIP/2000%' OR
+       cdr.dstchannel like 'SIP/2001%' OR
        cdr.dstchannel like 'SIP/2015%' OR
        cdr.dstchannel like 'SIP/2017%' OR
        cdr.dstchannel like 'SIP/2041%' OR
@@ -448,14 +489,14 @@ exports.getLigacoesRecebidasVendas= (req,res, next)=>{
        (
         (
        extract( HOUR FROM cdr.calldatestart )>= 8 
-        AND extract( HOUR FROM cdr.calldatestart )<= 20
+        AND extract( HOUR FROM cdr.calldatestart )<= 19
         AND weekday(cdr.calldatestart ) >= 0 
         AND weekday(cdr.calldatestart )<= 4
         )
         or
         (
          extract( HOUR FROM cdr.calldatestart )>= 8 
-        AND extract( HOUR FROM cdr.calldatestart )< 16
+        AND extract( HOUR FROM cdr.calldatestart )<=12
         AND weekday(cdr.calldatestart ) = 5
         )
     ) 
