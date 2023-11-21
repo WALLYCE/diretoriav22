@@ -83,9 +83,22 @@ exports.getLigacoesRealizadasVendas = (req,res, next)=>{
     cdr.uniqueid as gravacao,
     case when cdr.nota = '1' or cdr.nota = '2' or cdr.nota = '3' or cdr.nota = '4' or cdr.nota = '5' then cdr.nota else 'sem nota' end  as avaliacao
     FROM cdr 
-    where CAST(calldatestart AS date) >= date_format(str_to_date('${req.body['data_inicial']}', '%m/%d/%Y'), '%Y-%m-%d') and  CAST(calldatestart AS date) <= date_format(str_to_date('${req.body['data_final']}', '%m/%d/%Y'), '%Y-%m-%d')) as k
+    where cdr.dst = 'A' and lastdata not like '%call1-NOANSWER%' and CAST(calldatestart AS date) >= date_format(str_to_date('${req.body['data_inicial']}', '%m/%d/%Y'), '%Y-%m-%d') and 
+     CAST(calldatestart AS date) <= date_format(str_to_date('${req.body['data_final']}', '%m/%d/%Y'), '%Y-%m-%d')) as k
     inner join ramal on k.ramal = ramal.numero
-    where k.ramal in ('2084', '2074','2079','2068','2041','2043','2001')`;
+    where k.ramal in ('2000',
+    '2001',
+    '2015',
+    '2017',
+    '2041',
+    '2043',
+    '2048',
+    '2074',
+    '2067',
+    '2068',
+    '2069',
+    '2079',
+    '2084')`;
     conn.query(qry, (erro, resultado)=> {
         conn.release();
         if(erro){
@@ -415,7 +428,7 @@ exports.getLigacoesRecebidasCobranca= (req,res, next)=>{
        case when ramal.nome is null then 'NÃO ATENDIDA' else ramal.nome end as Ramal,
        case when queue_log.event = 'CONNECT' then  queue_log.data1 else queue_log.data3 end as espera_fila,
        cdr.uniqueid as gravacao,
-       case when cdr.nota = '-1' or cdr.nota = '' or cdr.nota = '*'  then 'sem nota' else cdr.nota end  as avaliacao
+       case when cdr.nota in ('0','1','2','3','4', '5')  then cdr.nota else 'sem nota' end  as avaliacao
        FROM cdr 
        inner join queue_log on (queue_log.callid = cdr.uniqueid and (queue_log.event = 'CONNECT' or queue_log.event= 'ABANDON') )
        LEFT join ramal on CONCAT('SIP/', ramal.numero) = SUBSTR(cdr.dstchannel,1, 8)
@@ -428,7 +441,7 @@ exports.getLigacoesRecebidasCobranca= (req,res, next)=>{
        cdr.dstchannel like 'SIP/2070%') and cdr.lastdata not like'cobranca%' and src like '1%' and cdr.dcontext = 'interno')) and
        (
         (
-       extract( HOUR FROM cdr.calldatestart )>= 8 
+        extract( HOUR FROM cdr.calldatestart )>= 8 
         AND extract( HOUR FROM cdr.calldatestart )<= 20
         AND weekday(cdr.calldatestart ) >= 0 
         AND weekday(cdr.calldatestart )<= 4

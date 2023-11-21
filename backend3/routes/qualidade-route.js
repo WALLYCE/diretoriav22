@@ -14,4 +14,9 @@ router.get('/meta/ligacoes_cobranca', auth.authenticated, QualidadeController.ge
 router.get('/meta/ligacoes_vendas', auth.authenticated, QualidadeController.getMetaLigacoesVendas)
 
 router.get('/ligacoes_vendas', auth.authenticated, QualidadeController.getLigacoesVendas)
+
+router.get('/meta/ligacoes_suporte', auth.authenticated, QualidadeController.getMetaLigacoesSuporte)
+
+router.get('/ligacoes_suporte', auth.authenticated, QualidadeController.getLigacoesSuporte)
+
 module.exports = router

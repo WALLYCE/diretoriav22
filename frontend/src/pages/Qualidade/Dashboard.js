@@ -24,6 +24,11 @@ export default function Dashboard(){
            <ChartPadraoLigacoes titulo={'Ligações Vendas'} url={'/qualidade/ligacoes_vendas'} nome={'ligacoes_vendas'}/>
 
         </Grid>
+
+        <Grid item xs={12} md={12} sm={12} mt={2} sx={{ borderBottom: 1  }}>
+           <ChartPadraoLigacoes titulo={'Ligações Suporte'} url={'/qualidade/ligacoes_suporte'} nome={'ligacoes_suporte'}/>
+
+        </Grid>
   </Grid>
     </>)
 }
